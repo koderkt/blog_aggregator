@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/joho/godotenv"
 	"github.com/koderkt/blog_aggregator/internal/database"
@@ -48,12 +49,13 @@ func main() {
 	mux.HandleFunc("POST /v1/feed_follows", apiConfig.middlewareAuth(apiConfig.handlerFeedFollowCreate))
 	mux.HandleFunc("DELETE /v1/feed_follows/{feedFollowID}", apiConfig.middlewareAuth(apiConfig.handlerDeleteFollow))
 	mux.HandleFunc("GET /v1/feed_follows", apiConfig.middlewareAuth(apiConfig.handlerGetAllFeedFollowsForAUser))
+	mux.HandleFunc("GET /v1/posts", apiConfig.middlewareAuth(apiConfig.handlerPostsGet))
 
 	srv := &http.Server{
 		Addr:    ":" + port,
 		Handler: mux,
 	}
-
+	go startScraper(apiConfig.DB, time.Minute)
 	log.Printf("Serving on port: %s\n", port)
 	log.Fatal(srv.ListenAndServe())
 }
